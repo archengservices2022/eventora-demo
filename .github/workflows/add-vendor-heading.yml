@@ -1,0 +1,35 @@
+name: Add curated vendors heading
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  update:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add vendor section heading
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          if 'Vendors people love.' not in s:
+              s=s.replace('.market{background:var(--soft)}', ".market{background:var(--soft)}.vendorHeading{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:34px}.vendorHeading h2{font-size:45px;margin:8px 0 0}.vendorHeading a{font-size:14px;font-weight:800;white-space:nowrap}.vendorHeading a:hover{opacity:.65}@media(max-width:550px){.vendorHeading{align-items:flex-start;flex-direction:column;gap:12px}.vendorHeading h2{font-size:36px}}")
+              old='<section class="section market" id="discover"><div class="container"><div class="filters" id="filters"></div>'
+              new='<section class="section market" id="discover"><div class="container"><div class="vendorHeading"><div><span class="tag">CURATED FOR YOU</span><h2>Vendors people love.</h2></div><a href="#discover" onclick="setVendorFilter(\'All\')">Explore all vendors →</a></div><div class="filters" id="filters"></div>'
+              if old not in s:
+                  raise SystemExit('Target vendor section not found')
+              s=s.replace(old,new,1)
+              p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Show Vendors people love heading"
+          git push
