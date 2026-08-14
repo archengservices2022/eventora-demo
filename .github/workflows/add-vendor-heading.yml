@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add vendor section heading
+      - name: Add homepage sections
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -20,10 +20,13 @@ jobs:
               s=s.replace('.market{background:var(--soft)}', ".market{background:var(--soft)}.vendorHeading{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:34px}.vendorHeading h2{font-size:45px;margin:8px 0 0}.vendorHeading a{font-size:14px;font-weight:800;white-space:nowrap}.vendorHeading a:hover{opacity:.65}@media(max-width:550px){.vendorHeading{align-items:flex-start;flex-direction:column;gap:12px}.vendorHeading h2{font-size:36px}}")
               old='<section class="section market" id="discover"><div class="container"><div class="filters" id="filters"></div>'
               new='<section class="section market" id="discover"><div class="container"><div class="vendorHeading"><div><span class="tag">CURATED FOR YOU</span><h2>Vendors people love.</h2></div><a href="#discover" onclick="setVendorFilter(\'All\')">Explore all vendors →</a></div><div class="filters" id="filters"></div>'
-              if old not in s:
-                  raise SystemExit('Target vendor section not found')
-              s=s.replace(old,new,1)
-              p.write_text(s)
+              if old in s: s=s.replace(old,new,1)
+          if 'class="siteFooter"' not in s:
+              css='.siteFooter{border-top:1px solid var(--line);padding:46px 0 22px;background:#fff}.footerTop{display:grid;grid-template-columns:1.8fr repeat(3,1fr);gap:55px;padding-bottom:48px}.footerBrand .brand{margin-bottom:24px}.footerBrand p{font-size:16px}.footerCol strong{display:block;font-size:12px;margin-bottom:14px}.footerCol a{display:block;color:var(--muted);font-size:13px;margin:0 0 11px}.footerCol a:hover{color:var(--ink)}.footerBottom{border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:10px}.footerBottom div{display:flex;gap:5px}@media(max-width:700px){.footerTop{grid-template-columns:1fr 1fr;gap:32px}.footerBrand{grid-column:1/-1}.footerBottom{flex-direction:column}}'
+              s=s.replace('</style>',css+'</style>',1)
+              footer='''<footer class="siteFooter"><div class="container"><div class="footerTop"><div class="footerBrand"><a class="brand" href="#top"><span class="logo">E</span>Eventora</a><p>Events, beautifully managed.</p></div><div class="footerCol"><strong>Plan</strong><a href="#services">Services</a><a href="#discover">Vendors</a><a href="#planner">Budget planner</a></div><div class="footerCol"><strong>Company</strong><a href="#top">About</a><a href="#workspace">For vendors</a><a href="mailto:hello@eventora.com">Contact</a></div><div class="footerCol"><strong>Account</strong><a href="#" onclick="openLogin();return false">Sign in</a><a href="#" onclick="openCreateEvent();return false">Create event</a></div></div><div class="footerBottom"><span>© 2026 Eventora</span><div><a href="#">Privacy</a><span>•</span><a href="#">Terms</a><span>•</span><a href="mailto:hello@eventora.com">Support</a></div></div></div></footer>'''
+              s=s.replace('</main></div>',footer+'</main></div>',1)
+          p.write_text(s)
           PY
       - name: Commit update
         run: |
@@ -31,5 +34,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Show Vendors people love heading"
+          git commit -m "Add curated vendor heading and footer"
           git push
